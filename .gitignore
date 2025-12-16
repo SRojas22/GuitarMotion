@@ -1,0 +1,42 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Audio recordings
+*.wav
+*.mp3
+*.ogg
+
+# Session data (recordings)
+data/recordings/sessions/*.json
+test.wav
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
