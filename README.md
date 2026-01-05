@@ -91,7 +91,7 @@ python3 main.py
 2. **Wait for lock**:
    - Orange: Searching for fretboard
    - Yellow: Locking (detecting consistently)
-   - Green: Locked ✅
+   - Green: Locked 
 
 3. **Confirm**: Press **SPACE** when locked
 
@@ -164,7 +164,7 @@ python3 models/train_fretboard_detector.py
 
 Model saved to: `models/weights/fretboard_detector.pt`
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 GuitarMotion/
@@ -223,22 +223,18 @@ GuitarMotion/
 - Fingertip landmarks: 8 (index), 12 (middle), 16 (ring), 20 (pinky)
 - Mapped to nearest string/fret intersection
 
-## 🤝 Contributing
-
-Contributions welcome! Areas for improvement:
+## Areas to improve:
+this are things tath i still need to work on to make it more usable:
 - More chords (power chords, 7ths, etc.)
 - Additional songs
 - Strumming pattern detection
 - Tempo adjustment in play-along
 - Mobile app version
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **YOLOv8**: Ultralytics
 - **Hand Tracking**: Google MediaPipe
 - **Audio Analysis**: Librosa
 - **Computer Vision**: OpenCV
 
----
-
-**Built with ❤️ for guitar learners everywhere**
