@@ -10,6 +10,18 @@ import time
 import os
 from pathlib import Path
 from src.guitar_detection import GuitarDetector
+from vision.hybrid_detector import HybridDetector
+from vision.lock_state import LockStateManager, LockState
+from vision.fretboard_mapper import FretboardMapper
+from ui.overlays import (
+    draw_lock_state_ui,
+    draw_fretboard_glow,
+    draw_progress_bar,
+    draw_instructions
+)
+from ui.calibration_ui import two_click_calibration, show_calibration_preview
+from modes.chord_coach_session import run_chord_coach, quick_chord_test
+from modes.play_along_session import run_play_along
 
 
 stop_event = threading.Event()
@@ -36,62 +48,132 @@ FRET_NOTES = {
 }
 
 
-def calibrate_guitar():
+def detect_and_lock_fretboard():
     """
-    Calibration phase: Detect guitar and wait for user confirmation.
-    Returns: GuitarDetector object if successful, None otherwise
+    Phase 1: Detect and lock onto fretboard using trained YOLO model
+    Returns: (HybridDetector, bbox, FretboardMapper, GuitarDetector) if successful, (None, None, None, None) otherwise
     """
     print("\n" + "="*60)
-    print("🎸 GUITAR CALIBRATION")
+    print("🎸 FRETBOARD DETECTION & LOCK")
     print("="*60)
-    print("Position your guitar fretboard so it's:")
-    print("  • Horizontal in the frame")
-    print("  • Well-lit and clearly visible")
-    print("  • Taking up about 1/3 to 1/2 of the frame")
-    print("\nPress SPACE when guitar is detected to start session")
-    print("Press 'q' to quit")
+    print("This will use your trained AI model to detect the fretboard!")
+    print("\nPosition your guitar fretboard so it's:")
+    print("  • Clearly visible in the frame")
+    print("  • Well-lit")
+    print("  • Horizontal orientation works best")
+    print("\nControls:")
+    print("  SPACE - Confirm lock and start session")
+    print("  Q - Quit")
     print("="*60 + "\n")
 
+    # Initialize hybrid detector (YOLO + edge fallback) and lock manager
+    hybrid_detector = HybridDetector()
+    lock_manager = LockStateManager(lock_threshold=0.75, stable_frames=15)
+
+    # Legacy detector for string/fret mapping (will use after lock)
+    legacy_detector = GuitarDetector()
+
     web_cam = cv2.VideoCapture(0)
-    detector = GuitarDetector()
-    guitar_detected = False
-    detected_region = None
+    last_bbox = None
+
+    if not web_cam.isOpened():
+        print("❌ Failed to open camera")
+        return None, None, None, None
+
+    print("📸 Camera opened successfully!")
+    print("🎯 Position your guitar in frame...\n")
 
     while web_cam.isOpened():
         success, frame = web_cam.read()
         if not success:
-            print("Failed to access camera")
+            print("❌ Failed to grab frame")
             break
 
         frame = cv2.flip(frame, 1)
 
-        # Attempt to detect guitar
-        detected_region = detector.detect_guitar(frame)
+        # Detect fretboard using hybrid detector (YOLO + edge fallback)
+        bbox, conf, method = hybrid_detector.detect(frame)
 
-        # Draw detection hints and overlay
-        frame = detector.draw_detection_hint(frame, detected_region)
+        # Update lock state
+        state = lock_manager.update(bbox, conf)
+        progress = lock_manager.get_lock_progress()
 
-        cv2.imshow("Guitar Calibration", frame)
+        # Draw UI overlays
+        frame = draw_lock_state_ui(frame, state, conf, method)
 
+        if bbox is not None:
+            # Draw glow around detected fretboard
+            frame = draw_fretboard_glow(frame, bbox)
+            last_bbox = bbox
+
+        # Draw progress bar when locking
+        if state == LockState.LOCKING:
+            frame = draw_progress_bar(frame, progress, position='bottom')
+
+        # Draw instructions
+        frame = draw_instructions(frame, locked=lock_manager.is_locked())
+
+        # Show frame
+        cv2.imshow("GuitarVision - Lock On", frame)
+
+        # Handle keyboard input
         key = cv2.waitKey(1) & 0xFF
 
-        # Press SPACE to confirm guitar detection
-        if key == ord(' ') and detected_region is not None:
-            # Calibrate strings and frets
-            if detector.calibrate_strings_and_frets(detected_region):
-                print("✅ Guitar calibrated successfully!")
-                guitar_detected = True
-                break
+        if key == ord(' ') and lock_manager.is_locked():
+            print(f"\n✅ Lock confirmed!")
+            print(f"   Method: {method.upper()}")
+            print(f"   Confidence: {conf:.1%}")
+            print(f"   Bbox (original): {last_bbox}")
 
-        # Press 'q' to quit
+            # Adjust bbox position - move it up slightly for better framing
+            VERTICAL_OFFSET = 40  # pixels to move up (adjust this value as needed)
+            x1, y1, x2, y2 = last_bbox
+            y1_adjusted = max(0, y1 - VERTICAL_OFFSET)  # Don't go above screen
+            y2_adjusted = max(0, y2 - VERTICAL_OFFSET)
+            last_bbox = [x1, y1_adjusted, x2, y2_adjusted]
+
+            print(f"   Bbox (adjusted): {last_bbox} (moved up {VERTICAL_OFFSET}px)")
+
+            # Capture calibration frame
+            calibration_frame = frame.copy()
+
+            web_cam.release()
+            cv2.destroyAllWindows()
+
+            # Phase 1b: Two-click calibration for precise fret/string mapping
+            print("\n" + "="*60)
+            print("🎯 FRETBOARD CALIBRATION")
+            print("="*60)
+
+            # Run two-click calibration
+            nut_x, fret_12_x = two_click_calibration(calibration_frame, last_bbox)
+
+            if nut_x is None or fret_12_x is None:
+                print("❌ Calibration failed or cancelled")
+                return None, None, None, None
+
+            # Create and calibrate mapper (20 frets for full range)
+            mapper = FretboardMapper(last_bbox, num_strings=6, num_frets=20)
+            mapper.set_reference_points(nut_x, fret_12_x)
+
+            # Show calibration preview
+            show_calibration_preview(calibration_frame, mapper, duration_ms=2000)
+
+            # Also calibrate legacy detector for backward compatibility
+            x1, y1, x2, y2 = map(int, last_bbox)
+            detected_region = (x1, y1, x2-x1, y2-y1)
+            legacy_detector.calibrate_strings_and_frets(detected_region)
+
+            print("✅ Fretboard fully calibrated and ready!")
+            return hybrid_detector, last_bbox, mapper, legacy_detector
+
         elif key == ord('q'):
-            print("Calibration cancelled")
+            print("\n❌ Detection cancelled")
             break
 
     web_cam.release()
     cv2.destroyAllWindows()
-
-    return detector if guitar_detected else None
+    return None, None, None, None
 
 
 def detect_string_and_fret(hand_landmark, frame_height, frame_width, guitar_detector):
@@ -125,7 +207,7 @@ def detect_string_and_fret(hand_landmark, frame_height, frame_width, guitar_dete
 
 def record_audio_continuous(filename="test.wav", fs=44100):
     """Continuously record audio until stop_event is set."""
-    print("🎙️  Audio recording started...")
+    print("🎙️ Audio recording started...")
     audio_buffer = []
 
     def callback(indata, frames, time_info, status):
@@ -146,10 +228,14 @@ def record_audio_continuous(filename="test.wav", fs=44100):
     return filename
 
 
-def record_camera_with_tracking(guitar_detector):
+def record_camera_with_tracking(guitar_detector, mapper=None):
     """
     Display camera, detect hands, and predict notes based on hand position
     relative to the detected guitar.
+
+    Args:
+        guitar_detector: Legacy GuitarDetector for string/fret detection
+        mapper: Optional FretboardMapper for AR overlay visualization
     """
     print("\n" + "="*60)
     print("🎬 RECORDING SESSION STARTED")
@@ -180,8 +266,11 @@ def record_camera_with_tracking(guitar_detector):
         frame = cv2.flip(frame, 1)
         h, w, _ = frame.shape
 
-        # Draw guitar overlay (strings and frets)
-        frame = guitar_detector.draw_guitar_overlay(frame)
+        # Draw fretboard overlay (use mapper if available, else legacy)
+        if mapper and mapper.is_calibrated:
+            frame = mapper.draw_overlay(frame, alpha=0.4)
+        else:
+            frame = guitar_detector.draw_guitar_overlay(frame)
 
         # Process hand detection
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -359,20 +448,60 @@ if __name__ == "__main__":
     print("  • Showing you if you're playing the right notes!")
     print("="*60 + "\n")
 
-    # PHASE 1: Guitar Calibration
-    print("PHASE 1: Guitar Detection & Calibration")
-    guitar_detector = calibrate_guitar()
+    # PHASE 1: Fretboard Detection & Lock
+    print("PHASE 1: Fretboard Detection & Lock")
+    hybrid_detector, bbox, mapper, guitar_detector = detect_and_lock_fretboard()
 
     if guitar_detector is None:
-        print("❌ Guitar calibration failed or cancelled. Exiting.")
+        print("❌ Fretboard detection failed or cancelled. Exiting.")
         exit(0)
 
-    # Small delay for user to prepare
+    # PHASE 2: Mode Selection
+    print("\n" + "="*60)
+    print("MODE SELECTION")
+    print("="*60)
+    print("Choose a mode:")
+    print("  1. Recording Session (track notes, compare with audio)")
+    print("  2. Chord Coach (practice chord shapes)")
+    print("  3. Play-Along (play along with songs)")
+    print("="*60)
+
+    while True:
+        mode = input("\nEnter mode (1, 2, or 3): ").strip()
+        if mode in ['1', '2', '3']:
+            break
+        print("Invalid choice. Please enter 1, 2, or 3.")
+
+    if mode == '2':
+        # CHORD COACH MODE
+        print("\n" + "="*60)
+        print("🎸 STARTING CHORD COACH MODE")
+        print("="*60)
+
+        # Run chord coach session
+        run_chord_coach(mapper, hybrid_detector)
+
+        print("Chord Coach session complete!")
+        exit(0)
+
+    elif mode == '3':
+        # PLAY-ALONG MODE
+        print("\n" + "="*60)
+        print("🎵 STARTING PLAY-ALONG MODE")
+        print("="*60)
+
+        # Run play-along session
+        run_play_along(mapper, hybrid_detector)
+
+        print("✨ Play-Along session complete!")
+        exit(0)
+
+    # Mode 1: Recording Session (original functionality)
     print("\nGet ready to play! Starting in 3 seconds...")
     time.sleep(3)
 
-    # PHASE 2: Recording Session
-    print("\nPHASE 2: Recording Session")
+    # PHASE 3: Recording Session
+    print("\nPHASE 3: Recording Session")
 
     # Reset hand positions for this session
     hand_positions.clear()
@@ -381,14 +510,14 @@ if __name__ == "__main__":
     audio_thread = threading.Thread(target=record_audio_continuous)
     audio_thread.start()
 
-    # Run camera tracking on main thread
-    record_camera_with_tracking(guitar_detector)
+    # Run camera tracking on main thread (with mapper for AR overlay)
+    record_camera_with_tracking(guitar_detector, mapper=mapper)
 
     # Wait for audio thread to finish
     audio_thread.join()
 
-    # PHASE 3: Analysis & Results
-    print("\nPHASE 3: Analysis & Results")
+    # PHASE 4: Analysis & Results
+    print("\nPHASE 4: Analysis & Results")
 
     # Analyze audio
     audio_notes = analyze_audio("test.wav")
@@ -402,4 +531,4 @@ if __name__ == "__main__":
     # Print results
     print_results(comparisons)
 
-    print("✨ Session complete! Check data/recordings/sessions/ for detailed JSON logs.")
+    print("Session complete! Check data/recordings/sessions/ for detailed JSON logs.")

@@ -1,0 +1,150 @@
+{
+  "C": {
+    "name": "C Major",
+    "fingers": [
+      {"string": 4, "fret": 3},
+      {"string": 3, "fret": 2},
+      {"string": 1, "fret": 1}
+    ],
+    "muted": [5],
+    "open": [0, 2],
+    "pitch_classes": ["C", "E", "G"]
+  },
+  "G": {
+    "name": "G Major",
+    "fingers": [
+      {"string": 5, "fret": 3},
+      {"string": 4, "fret": 2},
+      {"string": 0, "fret": 3}
+    ],
+    "open": [1, 2, 3],
+    "pitch_classes": ["G", "B", "D"]
+  },
+  "D": {
+    "name": "D Major",
+    "fingers": [
+      {"string": 2, "fret": 2},
+      {"string": 0, "fret": 2},
+      {"string": 1, "fret": 3}
+    ],
+    "muted": [4, 5],
+    "open": [3],
+    "pitch_classes": ["D", "F#", "A"]
+  },
+  "Em": {
+    "name": "E Minor",
+    "fingers": [
+      {"string": 4, "fret": 2},
+      {"string": 3, "fret": 2}
+    ],
+    "open": [0, 1, 2, 5],
+    "pitch_classes": ["E", "G", "B"]
+  },
+  "Am": {
+    "name": "A Minor",
+    "fingers": [
+      {"string": 3, "fret": 2},
+      {"string": 2, "fret": 2},
+      {"string": 1, "fret": 1}
+    ],
+    "muted": [5],
+    "open": [0, 4],
+    "pitch_classes": ["A", "C", "E"]
+  },
+  "E": {
+    "name": "E Major",
+    "fingers": [
+      {"string": 3, "fret": 2},
+      {"string": 4, "fret": 2},
+      {"string": 2, "fret": 1}
+    ],
+    "open": [0, 1, 5],
+    "pitch_classes": ["E", "G#", "B"]
+  },
+  "A": {
+    "name": "A Major",
+    "fingers": [
+      {"string": 3, "fret": 2},
+      {"string": 2, "fret": 2},
+      {"string": 1, "fret": 2}
+    ],
+    "muted": [5],
+    "open": [0, 4],
+    "pitch_classes": ["A", "C#", "E"]
+  },
+  "Dm": {
+    "name": "D Minor",
+    "fingers": [
+      {"string": 0, "fret": 1},
+      {"string": 2, "fret": 2},
+      {"string": 1, "fret": 3}
+    ],
+    "muted": [4, 5],
+    "open": [3],
+    "pitch_classes": ["D", "F", "A"]
+  },
+  "F": {
+    "name": "F Major",
+    "fingers": [
+      {"string": 0, "fret": 1},
+      {"string": 1, "fret": 1},
+      {"string": 2, "fret": 2},
+      {"string": 3, "fret": 3},
+      {"string": 4, "fret": 3}
+    ],
+    "muted": [5],
+    "pitch_classes": ["F", "A", "C"]
+  },
+  "Cadd9": {
+    "name": "C add9",
+    "fingers": [
+      {"string": 4, "fret": 3},
+      {"string": 3, "fret": 2},
+      {"string": 1, "fret": 3}
+    ],
+    "muted": [5],
+    "open": [0, 2],
+    "pitch_classes": ["C", "E", "G", "D"]
+  },
+  "Dsus4": {
+    "name": "D suspended 4th",
+    "fingers": [
+      {"string": 2, "fret": 2},
+      {"string": 0, "fret": 3},
+      {"string": 1, "fret": 3}
+    ],
+    "muted": [4, 5],
+    "open": [3],
+    "pitch_classes": ["D", "G", "A"]
+  },
+  "Em7": {
+    "name": "E Minor 7",
+    "fingers": [
+      {"string": 4, "fret": 2}
+    ],
+    "open": [0, 1, 2, 3, 5],
+    "pitch_classes": ["E", "G", "B", "D"]
+  },
+  "A7sus4": {
+    "name": "A7 suspended 4th",
+    "fingers": [
+      {"string": 2, "fret": 2},
+      {"string": 1, "fret": 3}
+    ],
+    "muted": [5],
+    "open": [0, 3, 4],
+    "pitch_classes": ["A", "D", "E", "G"]
+  },
+  "Bm": {
+    "name": "B Minor",
+    "fingers": [
+      {"string": 0, "fret": 2},
+      {"string": 1, "fret": 2},
+      {"string": 2, "fret": 4},
+      {"string": 3, "fret": 4},
+      {"string": 4, "fret": 4},
+      {"string": 5, "fret": 2}
+    ],
+    "pitch_classes": ["B", "D", "F#"]
+  }
+}

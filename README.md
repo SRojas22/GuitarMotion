@@ -1,142 +1,244 @@
-# 🎸 GuitarMotion
+# 🎸 GuitarMotion - AI Guitar Learning Assistant
 
-AI-powered guitar learning tool that helps beginners learn guitar by tracking hand positions and comparing them with actual played notes.
+An AR guitar coach that locks onto your real guitar's fretboard, overlays strings/frets/chord shapes, and provides real-time feedback with play-along mode for your favorite songs.
+
+![Version](https://img.shields.io/badge/version-2.0-blue)
+![Python](https://img.shields.io/badge/python-3.10+-green)
 
 ## Features
 
-- **Computer Vision Guitar Detection**: Automatically detects your physical guitar in the camera frame using edge detection and contour analysis
-- **Calibration System**: User-friendly calibration phase to position and confirm guitar detection before recording
-- **Real-time Hand Tracking**: Uses MediaPipe to detect your hand positions on the actual detected guitar fretboard
-- **Note Prediction**: Predicts which notes you're trying to play based on finger positions relative to the detected guitar strings and frets
-- **Audio Analysis**: Records and analyzes the actual notes you play using Librosa
-- **Smart Comparison**: Compares predicted notes (from hand position on detected guitar) vs actual notes (from audio) to show if you're playing correctly
-- **Visual Feedback**: Displays detected guitar boundaries, strings, frets, hand tracking, and predicted notes in real-time
-- **Session Recording**: Saves detailed JSON logs of each practice session with accuracy metrics
-- **Accuracy Tracking**: Shows your overall accuracy and identifies which notes you played correctly
+### Smart Fretboard Detection
+- **Custom YOLOv8 Model**: Trained on 543+ images for 99.16% accuracy
+- **Hybrid Detection**: YOLO + edge detection fallback for reliability
+- **Smooth Lock-On**: EMA smoothing eliminates jitter with visual state transitions
+- **Neon Glow UI**: Clear visual feedback (Searching → Locking → Locked)
 
-## How It Works
+### Precision Calibration
+- **Two-Click Setup**: Simply click nut + 12th fret for perfect alignment
+- **Real Guitar Math**: Logarithmic fret spacing (12th root of 2 formula)
+- **20 Fret Support**: Full fretboard coverage with labeled fret numbers
+- **Live Preview**: See string/fret overlay before you start
 
-1. **Guitar Detection**: Uses computer vision (Canny edge detection + contour analysis) to detect the physical guitar neck/fretboard in the camera frame
-2. **Calibration**: User positions guitar and confirms detection with visual feedback (green box around detected guitar)
-3. **String & Fret Mapping**: Automatically calculates positions of 6 strings and 12 frets on the detected guitar
-4. **Hand Detection**: MediaPipe tracks your hand positions in real-time via webcam
-5. **Coordinate Mapping**: Maps your index finger position to specific strings and frets on the DETECTED guitar (not just the frame)
-6. **Note Prediction**: Determines which note you're trying to play based on standard tuning
-7. **Audio Recording**: Simultaneously records the actual sound you make
-8. **Audio Analysis**: Uses librosa's YIN algorithm to detect the actual notes from audio
-9. **Comparison**: Matches predicted notes with actual notes and calculates accuracy
-10. **Results**: Displays detailed feedback showing correct/incorrect notes
+### Chord Coach Mode
+- **14 Chords Library**: From beginner (C, G, Em) to advanced (Bm, Cadd9)
+- **Ghost Circles**: Visual targets show exactly where to place fingers
+- **Real-Time Scoring**: Instant accuracy feedback with color coding
+- **Practice Tracking**: Session summaries with accuracy percentages
 
-## Setup
+### Play-Along Mode
+- **4 Songs Included**:
+  - Horse with No Name (beginner, 122 BPM)
+  - Let It Be (beginner, 73 BPM)
+  - Wonderwall (beginner, 87 BPM)
+  - Ojitos Lindos (intermediate, 79 BPM)
+- **Background Music**: MP3 playback with volume control (M, +, -)
+- **Visual Metronome**: Beat bars with downbeat accent
+- **Chord Timeline**: See next 3 chords coming up
+- **Streak Counter**: Track consecutive correct chords
 
-1. Activate your virtual environment:
-   ```bash
-   source venv/bin/activate
-   ```
+### Recording Session Mode
+- **Hand Tracking**: MediaPipe-based finger position detection
+- **Audio Analysis**: Librosa pitch detection
+- **Note Comparison**: Compare hand position vs actual sound
+- **Session Logs**: Detailed JSON recordings for review
 
-2. Install dependencies (if not already installed):
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Quick Start
 
-## Usage
+### Prerequisites
+- Python 3.10+
+- Webcam
+- Guitar
+- Microphone (for Recording mode)
 
-### Step 1: Run the Program
+### Installation
+
+1. **Clone the repository**:
+```bash
+git clone https://github.com/yourusername/GuitarMotion.git
+cd GuitarMotion
+```
+
+2. **Create virtual environment**:
+```bash
+python3 -m venv venv
+source venv/bin/activate 
+```
+
+3. **Install dependencies**:
+```bash
+pip install -r requirements.txt
+```
+
+4. **Download the trained model**:
+   - Place `fretboard_detector.pt` in `models/weights/`
+   - Or train your own (see Training section below)
+
+### Run the App
+
 ```bash
 python3 main.py
 ```
 
-### Step 2: Guitar Calibration Phase
+## Usage Guide
+
+### Phase 1: Fretboard Detection & Lock
+
 1. **Position your guitar**:
-   - Hold guitar horizontally in the camera frame
-   - Make sure the fretboard/neck is clearly visible
-   - Ensure good lighting on the guitar
-   - Guitar should take up about 1/3 to 1/2 of the frame
+   - Hold horizontally in frame
+   - Fretboard clearly visible
+   - Well-lit environment
 
-2. **Wait for detection**:
-   - The program will automatically detect the guitar using computer vision
-   - You'll see a yellow box showing the suggested position
-   - When guitar is detected, a green box will appear around it
+2. **Wait for lock**:
+   - Orange: Searching for fretboard
+   - Yellow: Locking (detecting consistently)
+   - Green: Locked ✅
 
-3. **Confirm calibration**:
-   - Once you see "Guitar Detected!" message
-   - Press **SPACE** to confirm and start the session
-   - Press **'q'** to cancel and quit
+3. **Confirm**: Press **SPACE** when locked
 
-### Step 3: Recording Session
-1. After confirmation, you have 3 seconds to prepare
-2. The camera window shows:
-   - Detected guitar with string and fret overlays
-   - Your hand tracking in real-time
-   - Predicted notes as you place fingers on frets
-   - Recording timer
+### Phase 2: Calibration
 
-3. **Play your guitar** - place fingers on strings/frets and play notes
+1. **Click the NUT** (leftmost edge, 0th fret)
+2. **Click the 12TH FRET**
+3. **Verify**: Check fret labels align with your guitar
+4. **Continue**: Press **SPACE** to confirm
 
-4. Press **'q'** when done to stop and analyze
+### Phase 3: Choose Your Mode
 
-### Step 4: View Results
-- Overall accuracy percentage
-- Detailed comparison of each note (predicted vs actual)
-- ✅ Green checkmarks for correct notes
-- ❌ Red X marks for incorrect notes
-- Session data automatically saved in `data/recordings/sessions/`
+#### Chord Coach (Mode 2)
+```
+1. Select a chord (C, G, D, Em, Am, etc.)
+2. See ghost circles showing target positions
+3. Place your fingers - get instant feedback
+4. Green = correct, Orange = close, Red = wrong
+5. Press 'c' to change chord, 'q' to quit
+```
 
-## Understanding the Results
+**Best for**: Learning new chords, improving accuracy
 
-After each session, you'll see:
-- ✅ **Green checkmarks**: Notes you played correctly
-- ❌ **Red X marks**: Notes that didn't match (wrong position or wrong sound)
-- **Accuracy percentage**: How many notes you played correctly overall
-- **Detailed log**: Time, predicted note, actual note, string, and fret for each attempt
+#### Play-Along (Mode 3)
+```
+1. Choose a song (1-4)
+2. Background music starts automatically
+3. Follow chord changes on screen
+4. Build streaks for consecutive correct chords
+5. Controls: M (pause/play), + (volume up), - (volume down)
+```
 
-## Requirements
+**Best for**: Practicing chord changes, playing with music
 
-- Python 3.10+
-- Webcam
-- Guitar
-- Microphone (built-in or external)
+#### Recording Session (Mode 1)
+```
+1. Start recording (3 second countdown)
+2. Play notes/chords
+3. Press 'q' to stop
+4. See accuracy report (hand position vs actual sound)
+```
 
-## File Structure
+**Best for**: Analyzing your technique, detailed feedback
+
+
+
+**Controls**:
+- **SPACE**: Capture image
+- **L**: Toggle lighting (bright/normal/dim)
+- **A**: Toggle angle (straight/tilt-left/tilt-right)
+- **G**: Toggle guitar type (acoustic/classical/electric)
+- **B**: Toggle background (plain/cluttered)
+- **Q**: Quit
+
+**Target**: 300-600 images with varied conditions
+
+### Labeling
+
+Use [Roboflow](https://roboflow.com) or LabelImg:
+1. Upload images to Roboflow
+2. Draw bounding boxes around fretboard (class: `fretboard`)
+3. Export in YOLOv8 format
+4. Place in `data/labeled/`
+
+### Training
+
+```bash
+python3 models/train_fretboard_detector.py
+```
+
+Model saved to: `models/weights/fretboard_detector.pt`
+
+## 📁 Project Structure
 
 ```
 GuitarMotion/
-├── main.py                    # Main application with 3-phase workflow
-├── src/
-│   ├── guitar_detection.py    # Computer vision guitar detection
-│   ├── hand_detection.py      # Hand tracking utilities (legacy)
-│   └── audio_utils.py         # Audio processing utilities (legacy)
+├── main.py                          # Main application entry point
+├── requirements.txt                 # Python dependencies
+│
+├── models/
+│   ├── fretboard_detector.py        # YOLO wrapper with EMA smoothing
+│   ├── train_fretboard_detector.py  # Training script
+│   └── weights/
+│       └── fretboard_detector.pt    # Trained model (not in git)
+│
+├── vision/
+│   ├── hybrid_detector.py           # YOLO + edge fallback
+│   ├── lock_state.py                # State machine (SEARCHING/LOCKING/LOCKED)
+│   └── fretboard_mapper.py          # String/fret geometry + calibration
+│
+├── modes/
+│   ├── chord_coach.py               # Chord practice logic
+│   ├── chord_coach_session.py       # Chord coach UI loop
+│   ├── play_along_session.py        # Play-along UI loop
+│   └── song_timeline.py             # BPM-based timeline manager
+│
+├── ui/
+│   ├── overlays.py                  # Lock state, glow, instructions
+│   ├── calibration_ui.py            # Two-click calibration
+│   └── metronome.py                 # Beat bar, chord timeline, streak
+│
+├── audio/
+│   └── background_music.py          # Pygame music player
+│
+├── tools/
+│   ├── collect_fretboard_data.py    # Image capture tool
+│   └── organize_labeled_data.py     # LabelImg organizer
+│
 ├── data/
+│   ├── chords.json                  # 14 chord library
+│   ├── songs/                       # Song JSONs + audio
+│   │   ├── wonderwall.json
+│   │   ├── ojitos_lindos.json
+│   │   └── audio/                   # MP3 files (not in git)
 │   └── recordings/
-│       └── sessions/          # Session JSON files stored here
-├── requirements.txt           # Python dependencies
-└── README.md                  # This file
+│       └── sessions/                # Session logs (not in git)
+│
+└── src/
+    └── guitar_detection.py          # Edge-based fallback detector
 ```
 
-## Tips for Best Results
+### Calibration Math
+- Fret spacing: `position = nut + (scale - scale / 2^(fret/12))`
+- Scale length: 2 × (12th fret - nut)
+- String spacing: Even distribution across bbox height
 
-### For Guitar Detection:
-- Use good, even lighting on the guitar fretboard
-- Hold the guitar horizontally in the frame (neck going left-right)
-- Position guitar so the fretboard/neck takes up 1/3 to 1/2 of the frame
-- Avoid cluttered backgrounds - plain backgrounds work best
-- If detection fails, try adjusting the angle or lighting
-- Wooden/natural fretboards work better than very dark or reflective ones
+### Hand Tracking
+- MediaPipe Hands (1 hand max)
+- Fingertip landmarks: 8 (index), 12 (middle), 16 (ring), 20 (pinky)
+- Mapped to nearest string/fret intersection
 
-### For Hand Tracking:
-- Keep hands visible and well-lit
-- Position hands clearly on the detected guitar fretboard
-- Avoid rapid movements - smooth, deliberate finger placements work best
-- Make sure fingers are clearly pressing specific frets
+## 🤝 Contributing
 
-### For Audio Detection:
-- Play in a quiet environment for better audio detection
-- Hold notes for at least 0.5 seconds for better detection
-- Play clearly - one note at a time works better than chords initially
-- Ensure guitar is tuned to standard tuning (E A D G B E)
+Contributions welcome! Areas for improvement:
+- More chords (power chords, 7ths, etc.)
+- Additional songs
+- Strumming pattern detection
+- Tempo adjustment in play-along
+- Mobile app version
 
-### General:
-- Start with slow, simple notes to get familiar with the system
-- Check the visual feedback - if predicted notes look wrong, recalibrate
-- Review your session JSON files to see detailed tracking data
+## 🙏 Acknowledgments
 
+- **YOLOv8**: Ultralytics
+- **Hand Tracking**: Google MediaPipe
+- **Audio Analysis**: Librosa
+- **Computer Vision**: OpenCV
+
+---
+
+**Built with ❤️ for guitar learners everywhere**

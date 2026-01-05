@@ -11,12 +11,26 @@ __pycache__/
 
 # Audio recordings
 *.wav
-*.mp3
-*.ogg
+test.wav
+
+# Song audio files (large - don't commit)
+data/songs/audio/
 
 # Session data (recordings)
 data/recordings/sessions/*.json
-test.wav
+
+# Training data (large files - don't commit)
+data/raw_images/
+data/labeled/
+data/fretboard-detection/
+
+# YOLOv8 training outputs
+runs/
+
+# Model weights (large files)
+models/weights/*.pt
+!models/weights/.gitkeep
+yolov8n.pt
 
 # macOS
 .DS_Store

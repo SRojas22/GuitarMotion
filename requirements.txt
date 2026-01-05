@@ -1,3 +1,4 @@
+# Core dependencies
 opencv-python
 mediapipe
 sounddevice
@@ -5,3 +6,15 @@ scipy
 librosa
 numpy
 matplotlib
+
+# YOLOv8 for fretboard detection
+ultralytics>=8.0.0
+
+# Data organization
+pyyaml
+
+# Audio playback for play-along mode
+pygame
+
+# Optional but recommended
+# labelImg  # For manual labeling (install separately if needed)

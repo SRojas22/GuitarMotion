@@ -1,0 +1,33 @@
+{
+  "id": "ojitos-lindos",
+  "title": "Ojitos Lindos (Acoustic)",
+  "artist": "Bad Bunny ft. Bomba Estéreo",
+  "audio_file": "data/songs/audio/ojitos_lindos.mp3",
+  "difficulty": "intermediate",
+  "bpm": 79,
+  "time_signature": "4/4",
+  "count_in_bars": 1,
+  "timeline": [
+    { "bar": 1,  "beat": 1, "chord": "Bm" },
+    { "bar": 3,  "beat": 1, "chord": "G" },
+    { "bar": 5,  "beat": 1, "chord": "Bm" },
+    { "bar": 7,  "beat": 1, "chord": "G" },
+    { "bar": 9,  "beat": 1, "chord": "D" },
+    { "bar": 11, "beat": 1, "chord": "A" },
+    { "bar": 13, "beat": 1, "chord": "G" },
+    { "bar": 15, "beat": 1, "chord": "A" },
+    { "bar": 17, "beat": 1, "chord": "Bm" },
+    { "bar": 19, "beat": 1, "chord": "G" },
+    { "bar": 21, "beat": 1, "chord": "D" },
+    { "bar": 23, "beat": 1, "chord": "A" },
+    { "bar": 25, "beat": 1, "chord": "Bm" },
+    { "bar": 27, "beat": 1, "chord": "G" },
+    { "bar": 29, "beat": 1, "chord": "Em" },
+    { "bar": 31, "beat": 1, "chord": "A" },
+    { "bar": 33, "beat": 1, "chord": "Bm" },
+    { "bar": 35, "beat": 1, "chord": "G" },
+    { "bar": 37, "beat": 1, "chord": "D" },
+    { "bar": 39, "beat": 1, "chord": "A" },
+    { "bar": 41, "beat": 1, "chord": "Bm" }
+  ]
+}

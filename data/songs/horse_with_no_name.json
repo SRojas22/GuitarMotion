@@ -1,0 +1,23 @@
+{
+  "id": "horse_with_no_name",
+  "title": "A Horse With No Name",
+  "artist": "America",
+  "audio_file": "data/songs/audio/horse_with_no_name.mp3",
+  "difficulty": "beginner",
+  "bpm": 122,
+  "time_signature": "4/4",
+  "count_in_bars": 1,
+  "timeline": [
+    { "bar": 1, "beat": 1, "chord": "Em" },
+    { "bar": 3, "beat": 1, "chord": "D" },
+    { "bar": 5, "beat": 1, "chord": "Em" },
+    { "bar": 7, "beat": 1, "chord": "D" },
+    { "bar": 9, "beat": 1, "chord": "Em" },
+    { "bar": 11, "beat": 1, "chord": "D" },
+    { "bar": 13, "beat": 1, "chord": "Em" },
+    { "bar": 15, "beat": 1, "chord": "D" },
+    { "bar": 17, "beat": 1, "chord": "Em" },
+    { "bar": 19, "beat": 1, "chord": "D" },
+    { "bar": 21, "beat": 1, "chord": "Em" }
+  ]
+}
