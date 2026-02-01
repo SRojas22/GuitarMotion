@@ -1,5 +1,7 @@
 # 🎸 GuitarMotion - AI Guitar Learning Assistant
 
+video of how it works: https://youtu.be/GeaN2CVMt3o
+
 An AR guitar coach that locks onto your real guitar's fretboard, overlays strings/frets/chord shapes, and provides real-time feedback with play-along mode for your favorite songs.
 
 ![Version](https://img.shields.io/badge/version-2.0-blue)
